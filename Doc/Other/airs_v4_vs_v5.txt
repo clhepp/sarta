@@ -1,0 +1,192 @@
+-----------------------------------------
+Changes to the AIRS-RTA for PGE version 5
+-----------------------------------------
+Scott Hannon, 08 May 2007   <hannon@umbc.edu>
+
+Overview:
+
+The AIRS fast forward model used by the PGE version 5
+(AIRS-RTA v5) is the same basic model as used in version 4,
+but with some algorithm changes and additions to improve
+the fast model's accuracy and increase its flexibility.
+The changes and additions can be summarized as:
+
+ * improved tuning of the transmittances
+
+ * improved frequencies for channels 1-130
+
+ * improved estimate of reflected downwelling radiance
+
+ * new daytime radiance contribution for non-LTE emission
+
+ * new vertical variability for CO2 profiles
+
+ * new variable trace gases N2O, SO2, and HNO3
+
+Each of these changes for v5 are discussed in more detail in the
+following sections.
+
+
+Transmittance Tuning:
+
+The transmittance tuning (applied as optical depth multipliers)
+used in v4 was based on a limited amount of validation data
+available at the time the fast model was finalized in January
+2004.  Over the next two years a much larger amount of
+validation data become available, and this has been used
+to improve the transmittance tuning in v5.  A more detailed
+discussion of the validation data and the effects of tuning
+can be found in [Strow et al 2006].
+
+For the most part the changes to tuning are relatively minor,
+affecting computed Brightness Temperature (BT) spectra at the
+few tenths of a Kelvin level or less.  The main change is to
+"fixed" gases in the 15 and 4.3 um regions.  Unlike v4, the
+v5 tuning was extended to stratospheric channels (based upon AIRS
+retrievals, as very little in situ validation data is available).
+The tuning of the 4.3 um channels took into consideration non-LTE
+effects.  Some relatively minor changes were made to tuning in
+shortwave channels affected by N2O.
+
+The changes to water tuning are minor, the main changes being
+near 880 and 1320 cm^-1 where the old tuning appeared to have
+been influenced by HNO3.  The CH4 tuning near 1305 cm-1 was
+adjusted by 2% on the recommendation of the retrieval team
+to reduces biases in retrieved CH4.  Finally, a significant
+change has been made to ozone in the 10 um region.  This
+tuning attempts to account for changes to ozone line
+parameters in the recent HITRAN 2004 databases versus the
+HITRAN 2000 upon with the v5 fast model is based.
+
+
+Channel Frequencies:
+
+An error in the frequencies of channels 1 to 130 (detector
+module 12) has been corrected for v5.  The v5 channels have
+been shifted ~+1.5% of a channel width compared to v4.
+New fast model coefficients were generated for the shifted
+channels based upon revised model SRFs.  No other channels
+are affected.  The effects on BT spectra are on the order
+of a few tenths of a Kelvin or less.
+
+
+Reflected Downwelling Radiance:
+
+The algorithm used to estimate the radiance contribution from
+reflected downwelling atmospheric thermal emission has been
+totally redone for v5.  The new algorithm required some
+restructuring of the radiative transfer code for computational
+efficiency, but it provides a more accurate estimate at little
+extra computational cost.  Over ocean and other low reflectivity
+surfaces, the reflected downwelling therm is typically on the
+order of a few tenths of a Kelvin in the widow channels and
+negligible in non-window channels.  However, over more
+reflective surfaces the radiance contribution can be much
+larger, and here the improved algorithm for v5 may help.
+
+For v5 the reflected downwelling thermal radiance contribution
+is first computed as a downward radiance at the surface in
+manner similar to the calculation of the main upward thermal
+radiance.  This radiance is multiplied by a fudge factor "F"
+to adjust for the use of the same layer transmittances used
+by the upward radiance calculations, as these are not quite
+mathematically correct when used for downwelling radiances.
+The "F" factor is calculated using predictors based on the
+surface-to-space transmittance, the secant of the viewing
+angle, and the downward radiance, with coefficients
+determined by regression.  The total reflected downwelling
+thermal radiance reaching AIRS is the the downward radiance
+at the surface times the surface reflectivity (times pi) and
+the surface-to-space transmittance.
+
+
+Non-LTE:
+
+New coefficients and code were added to model the effects
+of non-Local Thermodynamic Equilibrium (non-LTE) in the AIRS
+shortwave stratospheric channels during daytime.  The effects
+of non-LTE emission are quite large; if not accounted for,
+obs-cal BT biases on the order of 10 Kelvin are typical.
+The non-LTE model included in the v5 AIRS-RTA is simple and
+sufficiently accurate to reduce daytime biases to similar
+levels as the nightime biases where non-LTE is not present.
+
+The non-LTE radiance contribution is computed as an
+independent term added to the standard (LTE) radiance.
+This non-LTE radiance is calculated using predictors
+based on the solar and satellite zenith angles as well
+the mean temperature in the top five AIRS layers, with
+coefficients determined by regression.  For more details,
+see ref [De Souza-Machado et al 2006].
+
+
+Variable CO2:
+
+The algorithm responsible for handling the variability of
+trace gas CO2 was modified to allow for more flexibility. In
+v4 the CO2 variability was limited to an overall profile scale
+factor, while in v5 the CO2 may be independently varied in each
+AIRS layer.  This change will allow AIRS computations to make
+use of climatologically based CO2 profile shapes rather than
+being restricted to the default US Standard profile shape.
+
+
+Variable N2O, SO2, and HNO3:
+
+For v5 new code and coefficients has been added to allow for
+variability in trace gases N2O, SO2, and HNO3.  These gases
+were previously "fixed" in the v4 and early AIRS fast models.
+The implementation of the variability for each of these gases
+is similar to how we handled the variability of CO2.  None
+of these gases are currently retrieved in the v5 PGE.
+
+N2O (nitrous oxide) is fairly well mixed in the atmosphere
+and is only expected to vary by a a few percent around the
+mean.  N2O absorption has a significant affect on AIRS
+radiances in a three spectra regions: moderately at 1250-1320,
+strongly at 2180-2250, and weakly at 2450-2600 cm^-1. The
+effects of variable N2O on AIRS BT spectra are estimated to
+be at the couple tenths of a Kelvin level.
+
+SO2 (sulfur dioxide) is typically present in the atmosphere
+at too low a concentration to be detectable to AIRS.  However,
+volcanic eruptions often emit large amounts of SO2 and push
+it high into the tropopshere, and these volcanic plumes are
+often observable using AIRS.  SO2 absorption affects AIRS
+radiances in three spectral regions: weakly at 1100-1137,
+strongly at 1330-1390, and very weakly at 2470-2520 cm^-1.
+The effects of variable SO2 on AIRS BT spectra can be anywere
+from zero to tens of Kelvins, depending on how much SO2 is
+present.
+
+HNO3 (nitric acid) is present in the atmsophere at a level
+at which the climatic and season variations are detectable
+by AIRS.  Most of the HNO3 is located in the stratosphere,
+and it tends be at the low amounts in the tropics and
+larger amounts at high latitudes.  HNO3 affects AIRS
+radiances with similarly strength in two spectra regions:
+the 850-920 cm^-1 window region, and the 1280-1350 cm^-1
+lower/mid troposphere water region. The global variation
+in HNO3 results in change to AIRS BT spectra on the order
+of a few tenths of a Kelvin.
+
+
+--- references ---
+
+S. De Souza-Machado, L. L. Strow, S. E. Hannon, H. Motteler,
+   M. Lopez-Puertas, B. Funke and D. P. Edwards
+"Fast Forward Radiative Transfer Modeling of 4.3 um Non-Local
+Thermodynamic Equilibrium effects for the Aqua/AIRS Infrared
+Temperature Sounder"
+Geophysical Review Letters, 34, L01802 (2006),
+doi:10.1029/2006GL026684
+
+L. L. Strow, S. E. Hannon, S. De Souza-Machado, H. E. Motteler,
+   and D. C. Tobin
+"Validation of the Atmospheric Infrared Sounder radiative transfer
+algorithm"
+Journal Of Geophysical Research, vol. 111, D09S06 (2006),
+doi:10.1029/2005JD006146
+
+
+---end of file---

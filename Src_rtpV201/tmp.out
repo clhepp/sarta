@@ -1,0 +1,40 @@
+rm -f *.o incFTC.f
+sed 's/XSPECCALX/20020830/g' incFTC_airs_apr08_m130x_m140x_370_template_cal.f > incFTC.f
+make -f make_sarta_df
+make[1]: Entering directory `/strowdata1/shared/tangborn/packages/sartaV108/Src_rtpV201'
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calnte.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include rdprof.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include vaconv.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calpar.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include qikexp.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include setems.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include getbot.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calt1.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calt2.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calt3.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calt4.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calt5.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calt6.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calt7.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include faketz.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include sunpar.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calrad.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include saconv.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calowp.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include calokw.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include util.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include opnrtp.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include wrtrtp.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include mean_t.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include rdinfo.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include cbplev.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include rdrtp_df.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include rdcoef_df.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include tunmlt_df.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include sumcof_df.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include speccal_df.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include rdsun_df.f
+/asl/opt/absoft/absoft10.0/bin/af77 -c -s -O -N3 -N26 -I../../rtpV201/include sarta_df.f
+/asl/opt/absoft/absoft10.0/bin/af77 calnte.o  rdprof.o  vaconv.o  calpar.o  qikexp.o   setems.o  getbot.o calt1.o   calt2.o   calt3.o   calt4.o   calt5.o    calt6.o   calt7.o faketz.o  sunpar.o  calrad.o  saconv.o  calowp.o   calokw.o    util.o opnrtp.o  wrtrtp.o  mean_t.o  rdinfo.o  cbplev.o rdrtp_df.o         rdcoef_df.o         tunmlt_df.o           sumcof_df.o speccal_df.o          rdsun_df.o          sarta_df.o -L../../rtpV201/lib -lrtp -L/asl/opt/lib -lmfhdf -ldf -ljpeg -lz -lU77
+make[1]: Leaving directory `/strowdata1/shared/tangborn/packages/sartaV108/Src_rtpV201'
+mv a.out ../BinV201/sarta_apr08_m130x_m140x_370_cal20020830

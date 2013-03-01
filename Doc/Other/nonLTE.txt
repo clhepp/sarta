@@ -1,0 +1,101 @@
+Here are some notes on the non-Local Thermodynamic Equilibrium algorithm
+used with our AIRS fast model.  Scott.
+
+-------------------------------------------------------------------------------
+To implement the nonLTE model in the SARTA code, I had to write a
+new routine:
+   calnte.f - calculates the nonLTE radiance contribution
+and modify some old routines:
+   rdcoef.f - read in nonLTE coefficients
+   sarta.f - add nonLTE coefs to rdcoef call and add calnte call
+and add a few new lines to the include file:
+   incFTC.f - specify the nonLTE coef file and array size
+
+-------------------------------------------------------------------------------
+Our preliminary testing of the October 2005 nonLTE fast model with the
+"calnte.f" DRAD fudge factor set to 1.20 looks promising.  The following
+jpeg files show some results for clear FOVs over-ocean.
+
+Focus day 27 July 2005 results (30000 day and 10000 night FOVs):
+   nonLTE_mean.jpg      - mean of BT_Obs - BT_Cal, (K)
+   nonLTE_std.jpg       - std dev of BT_Obs - BT_Cal, (K)
+   nonLTE_668vs2361.jpg - histogram of BT_Obs - BT_Cal for two channels at
+                             668 and 2361 cm^-1 (ID 79 & 2081).  These two
+                             channels have similar weighting functions.  The
+                             2361 cm^-1 channel is blue(night) and red(day),
+                             and the 668 cm^-1 channel is cyan(night) and
+                             magenta(day).
+Granule 136 of 30 June 2005 (300 day FOVs):
+   nonLTE_20050630g136.jpg - top: mean BT_cal for night(blue) and day(red).
+                             bottom: mean BT_Obs - BT_Cal for night and day.
+
+-------------------------------------------------------------------------------
+Date: Tue, 4 Oct 2005 11:04:36 -0400
+From: Scott Hannon <hannon@umbc.edu>
+
+There is not much to the fast model non-LTE.  Here's a
+description.
+
+  R_chan_lte = integral{ R_lte(v) * f(v) * dv }
+
+where R_lte(v) is the monochromatic upwelling radiance at the top of
+an atmosphere in Local Thermodynamic Equilibrium, f(v) is the SRF for
+the channel, and the integral is over the spectral interval of the
+channel v_min to v_max.
+
+R_chan_nonlte is similarly defined except it is for an atmosphere
+in non-LTE.
+
+We already have a fast model which can compute the approximate
+R_chan_lte for an arbitrary profile, but the non-LTE calculation
+is significantly more complex.  However, this complexity of the
+calculation does not necessarily translate into a complexity of
+the effect.  That is, while it calculation is complex, it may be
+possible to approximate the result by a more simple means.
+
+Now we define
+
+   delta_R_chan_nonlte = R_chan_nonlte - R_chan_lte
+
+which is simply the difference in radiance as seen by the observing
+instrument between the atmosphere in nonLTE and LTE conditions.
+
+We can re-arrange terms to get
+
+   R_chan_nonlte = R_chan_lte + delta_R_chan_nonlte
+
+Thus if there is an easy way to model delta_R_chan_nonlte, we will
+easily be able to calculate R_chan_nonlte with our fast model.
+
+We can calculate R_chan_lte and R_chan_nonlte with our monochromatic
+code "kCARTA" code, and convolve them with the AIRS SRFs to get
+R_chan_lte and R_chan_nonlte.  We can do this for an ensemble of
+profiles at multiple viewing angles and sun angles.  With such a
+database, we can then calculate delta_R_chan_nonlte.  Finally,
+we do a regression to relate delta_R_chan_nonlte to a set of
+predictors.
+
+   A * X = delta_R_chan_nonlte
+
+where A is a matrix of preditors, and X are the coefficient
+determined by regression.  The predictors were chosen by
+trial-and-error, starting from a list of plausible terms.
+Here is what we are using for out AIRS fast model:
+
+1) 1
+2) suncos
+3) suncos^2
+4) suncos * viewsec
+5) suncos * Thi
+6) suncos_surf
+
+suncos = sun angle cosine at top AIRS layer
+viewsec = view angle secant at top AIRS layer
+Thi = mean temperature in the top five AIRS layers
+suncos_surf = sun angle cosine at the surface.
+
+Scott Hannon
+Department of Physics                        email : hannon@umbc.edu
+University of Maryland Baltimore County      Phone : 410-455-3001
+1000 Hilltop Circle                          Office: Physics 430
+Baltimore, MD 21250

@@ -1,0 +1,209 @@
+***********************
+Instrument Code Numbers
+***********************
+Last updated: Scott Hannon, 23 July 2001
+
+The RTP format includes a code number which may be used to specify
+the particular instrument used for the radiances observations (if
+any).  There are separate entries for the IR and MW instruments.
+
+The following system of code numbers is suggested.  Each instrument
+type is assigned ID code number N x100.  All numbers between N*100
+and (N+1)*100 - 1 correspond to the same basic instrument type, but
+allows for up to 100 copies/versions of the basic instrument.
+Individual instruments within types with multiple copies can be
+assigned their own unique code number.  The first copy is 1, later
+additional copies are number sequentially in chronological order of
+deployment.  Or, if an instruments already has a familar 1 or 2
+digit ID number, that number can be used.
+
+The following lists may be missing some instruments; extend
+the lists as you see fit.
+
+-------------------------------------------------------------------------------
+Infrared Instrument Types
+-------------------------
+  000   undefined
+  100   HIRS
+  200   HIS
+  300   AERI
+  400   IMG
+  500   NAST-I
+  600   Scanning HIS
+  700   CIREX
+  800   AIRS
+  900   CrIS
+ 1000   IASI
+ 1100   GIFTS
+
+
+Microwave Instrument Types
+--------------------------
+  000   undefined
+  100   AMSU
+Maybe MSU should be on here?
+
+
+-------------------------------------------------------------------------------
+Specific IR Instruments
+-----------------------
+
+HIRS code 100:  ~20 channels with ~10 cm-1 resolution using separate
+   interference filters for each channel.  Satellite instrument.
+   There are approximately a dozen HIRS instrument.  HIRS instruments
+   have been flying on NOAA's POES platforms since 1978 and some of the
+   older instruments are no longer in service.  New HIRS instruments
+   continue to enter service as part of the POES TOVS instrument
+   package.  Over the years there have been some changes in the
+   instrument details, so they are not all exactly alike.
+   100 = generic HIRS
+   101 - 104 = reserved
+   105 = NOAA N (original)
+   106 = NOAA 6
+   107 = NOAA 7
+   108 = NOAA 8
+   109 = NOAA 9
+   110 = NOAA 10
+   111 = NOAA 11
+   112 = NOAA 12
+   113 = NOAA 13
+   114 = NOAA 14
+   115 = NOAA 15 (aka K)
+   116 = NOAA L
+   117 = NOAA M
+   118-120 = reserved for future NOAA operated HIRS nstruments
+   121 - 199 = available
+
+
+HIS code 200:  ~1 cm-1 resolution FTIR instrument, 600-3000 cm-1.
+   Aircraft instrument without cross-track scanning.  As far as I know,
+   all HIS instruments have been operated by University of Wisconsin,
+   Madison.  I'm not sure how many have been built (and rebuilt), but
+   somewhere around 3.  I think some one or more have been extensively
+   rebuilt and thus may warrant a separate code number for the rebuild.
+   200 = generic HIS
+   201-209 = reserved for U.Wisconsin
+   210-299 = available
+
+
+AERI code 300: ~1 cm-1 resolution FTIR instrument, 500-3000 cm-1.
+   Usually operated from the surface looking upward.  There are
+   currently approximately a dozen AERI instruments in use, and a
+   few more are expected to enter service over the next few years.
+   Known (albeit vaguely) instruments include:
+   300 = generic AERI
+   301-305 = ARM/CART Southern Great Plains (SGP) facilities located in
+      Oaklahoma & Kansas.  Currently operating 5 instruments:
+      301 : central facility CF-1 in Lamont, Oaklahoma
+      302 : north boundary facility BF-1 in Hillsboro, Kansas
+      303 : south boundary facility BF-6 in Purcell, OK
+      304 : west boundary facility BF-4 in Vici, OK
+      305 : east boundary facility BF-5 in Morris, OK
+   306 = ARM/CART Tropical Western Pacific (TWP) facility located
+      on the island nation of Nauru.
+   307 = ARM/CART North Slope of Alaska (NSA) facility located in
+      Barrow(?), Alaska.   This AERI has extended spectral range. 
+   308 = ARM/CART SHEBA ice station located somewhere on floating
+      ice in the Arctic ocean.
+   309-319 = reserved for future ARM/CART AERI instruments
+   320-325 = reserved for University of Wisconsin, Madison.  (I'm
+      unsure of how many instruments they operate...two?)
+   326 = University of Maryland Baltimore County (UMBC).  This
+      instrument is owned by faculty member Wallace McMillan.
+      This instrument is semi-mobile.  It's usual location is
+      beneath a hatch in the roof of the physics building.
+   327 = Mauna Loa Observatory, Hawaii (big island), Hawaii.
+       This instrument is owned by UMBC faculty member
+       Larrabee Strow, and operated with the help of NOAA's
+       ETL group.
+   330-335 = three (?) instruments operated by U.Miami?
+   336 = Anarctica
+   337-339 = reserved
+   340-399 = available
+
+
+IMG code 400: ~0.1 cm-1 resolution FTIR satellite instrument,
+   600 - 2700 cm-1 range.  Amazing resolution but short lived.
+   The first instrument was on the Japanese ADEOS satellite
+   which died suddenly after just a few months of service.
+   400 = generic IMG
+   401 = first (and only?), on ADEOS
+   402 = second?
+   403 - 499 = available
+
+
+NAST code 500: ~1 cm-1 resolution FTIR aircraft instrument,
+   600 - 2800 cm-1, with cross-track scanning.
+   Another instrument from the U.Wisconsin group.  I'm
+   unsure how many have built, but no more than a handful.
+   500 = generic NAST
+   501 = first
+   502 = second
+   503 = third
+   504 - 510 = reserved
+   511-599 = available
+
+
+Scanning HIS code 600:  similar to HIS but with cross-track scanning.
+   As far as I know only one exists, but one or two others might exist.
+   600 = generic Scanning HIS
+   601 = first
+   602 = second
+   603 = third
+   604-609 = reserved for U.Wisconsin
+   610-699 = available
+
+
+CIREX code 700: ~1 cm-1 resolution FTIR instrument operated by Harvard
+   with 200 - 2800 cm-1 spectral range.  Cross-track scanning, and can
+   be operated upward looking as well as the more usual down looking.
+   As far as I know only one as built.
+   700 = generic CIREX
+   701 = first
+   702 - 709 = reserved for Harvard
+   710-799 = available
+
+
+AIRS code 800: ~0.5 to ~1 cm-1 grating instrument, with 650 - 1600 and
+   2200 - 2700 cm-1 spectral range (note: some gaps in coverage).
+   There is only one AIRS instrument planned.  It is expected
+   to launch in early 2002.
+   800 = generic AIRS
+   801 = Aqua
+   802 = reserved for nothing in particular
+   803-899 = available
+
+
+CrIS code 900: ~1 cm-1 resolution FTIR satellite instrument, with
+   600-2800 cm-1 spectral range.
+   Expected to launch ~2005 or later
+   900 = generic CrIS
+
+
+IASI code 1000: ~1 cm-1 resolution FTIR satellite instrument, with
+   600-2800 cm-1 range.
+   Expected to launch ~2005
+   1000 = generic IASI
+
+
+GIFTS code 1100: 0.25 or 0.63 cm-1 resolution FTIR satellite instrument
+   with 700-1100 and 1700-2200 cm-1 spectral range.  Under development
+   for deployment on a geostationary satellite.
+   Expected to launch ~2004 or later
+   1100 = generic GIFTS
+
+
+
+Specific MW Instruments
+-----------------------
+AMSU code 100:
+   100 = generic AMSU
+   101 = Aqua, AMSU-A1 + AMSU-A2 + HSB
+   102-114 = reserved
+   115 = NOAA 15 (aka K), AMSU-A1 + AMSU-A2 + AMSU-B
+   116 = NOAA L
+   117 = NOAA M
+   118-120 = reserved for future NOAA instruments
+   121-199 = available
+
+---end of file---

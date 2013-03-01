@@ -1,0 +1,45 @@
+%    Recommended cloud type ("ctype") code numbers
+%
+%    Created: 08 Jan 2007, Scott Hannon
+%    Update: 22 Feb 2007, S.Hannon - add specific 101, 201, 301
+%    Update: 10 Sep 2007, S.Hannon - add black cloud types 0 & 1
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%    Min - Max  Description
+%    ---------  --------------------------------------------------------
+%    -1 or less no cloud         
+%    000 - 099  Black clouds
+%    100 - 199  Spherical liquid H2O droplets
+%    200 - 299  Ice aggregates
+%    300 - 399  Dust/mineral
+%    400 - 499  Sea salt (liquid H2O + salt)
+%    500 - 599  Smoke/soot
+%    600 - 699  Sulfate/pollutants
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code numbers for black clouds as coded in "bkprep.f"
+%
+% ID   description
+%----  ---------------------------------------------------
+%  0   "black body": emis=1, rho=0
+%
+%  1   "no reflection": emis as given but rho=0
+%
+%  2   "cemis for rho only": emis=1, rho=(1-cemis)/pi
+%
+% 3-99 "Lambertian reflection": emis as given and rho = (1-emis)/pi
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Code numbers in use at UMBC with lookup tables at
+%     /asl/data/sarta_database/Data_mie_m135f/New
+%
+% ID    name         comment
+%----   -----------  ---------------------------------------------------
+% 101 = "waterdrop" : water droplet clouds
+%
+% 201 = "ice_aggr"  : ice clouds
+%
+% 301 = "andesite"  : volcanic (and often other) dust clouds
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

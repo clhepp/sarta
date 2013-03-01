@@ -1,0 +1,399 @@
+
+    ================================================
+    Science related notes for the SARTAv1.03 package
+    ================================================
+    September 2002 "m135f" version of the AIRS-RTA
+    Programmer: Scott Hannon (email: hannon@umbc.edu)
+    AIRS team member: L. Larrabee Strow (email: strow@umbc.edu)
+    Last update: 20 September 2002
+
+
+Introduction:
+------------
+The September 2002 SARTAv1.03 package is very similar to our
+previous SARTAv1.02 package.  The main change is new RTA
+coefficients for the "m135f" (-13.5 um with fringes) channel
+set.  This is the calibrated channel set as of 18 August 2002.
+Some relatively minor changes were made to some source code
+routines (calpar.f & sunpar.f and  calt1.f thru calt7.f) to
+accomodate changes made to the water continuum.
+ 
+The SRFs for this package are based on the SRF model at
+T_grating=155.1325 K with y-offset -13.50 um, and fringes
+for T_filter=156.157 K.
+
+Note: there is some indication that the channel center
+frequencies for AIRS module M-5 (1100 cm-1 region) may be off
+by around -3 um (ie might be -10.5 instead of -13.5 um).  We
+are currently investigating this issue.
+
+
+Overview of the Method:
+----------------------
+Our fast transmittance model is based on methods developed and used by
+Larry McMillan, Joel Susskind,  and others.  An introduction to the
+theoretical development of the approximations employed can be found in:
+   "Atmospheric Transmittance of an Absorbing Gas: A Computationally Fast
+   and Accurate Transmittance Model...", Larry M. McMillin and Henry E.
+   Fleming, Applied Optics, vol 15 no 2, February 1976, pages 358-363.
+and for OPTRAN in:
+   "Atmospheric Transmittance of an Absorbing Gas 5.  Improvements to
+   the OPTRAN Approach", L.M. McMillin, L.J. Crone, and T.J. Kleespies,
+   Applied Optics, vol34 no36, December 1995, pages 8396-8399.
+
+Briefly, an outline of the method we employed is:
+
+[a.] Select the Regression Profiles:
+   We chose 48 regression profiles which cover the realistic range of profile
+   variability.  Each profile consists of temperature and gas amounts of 4
+   variable gases: water, ozone, carbon monoxide, and methane.  All other
+   gases are "fixed" (do not vary in amount with profile).
+
+[b.] Calculate Monochromatic Transmittances:
+   Monochromatic layer-to-space transmittances for the regression profiles
+   are computed.  This was done using our KCARTA v1.01 package.  The layer-
+   to-space transmittances are grouped into sets of "mixed" gases.  For
+   this production, there were 4 different ways in which the gases were
+   grouped, depending upon the frequency region:
+      FOW  : 3 groups of transmittances: F, FO, FOW
+      FOWp : 4 groups of transmittances: F, FO, FOW, FOWp
+      FMW  : 3 groups of transmittances: F, FM, FMW
+      FCOWp: 5 groups of transmittances: F, FC, FCO, FCOW, FCOWp
+   where F refers to "fixed" gases, W to water, O to ozone, C to carbon
+   monoxide, and M to methane.  The "p" refers to perturbed CO2, in which
+   the CO2 amount has been increased by +5%.  Thus "FM" refers to the
+   transmittance of the "fixed" gases and methane together.
+
+   For channels under 1620 cm-1, we did 6 angles with secants:
+      1.00  1.19  1.41  1.68  1.99  2.37
+   For the shortwave channels we did 6 additional angles to extend out
+   to the larger angles need for the for reflected solar radiance:
+      2.84  3.47  4.30  5.42  6.94  9.02
+
+[c.] Convolve the Transmittances:
+   The monochromatic transmittances are convolved with the AIRS Spectral
+   Response Functions.  For this production run, there was a separate SRF
+   for each of the AIRS channels.  The SRFs are based upon laboratory
+   measurements of the SRFs.  In particular, we used interpolations of
+   measurements for test 261, with the wings added on using a model.  The
+   channels in module 11 which are based on test 266 due to noise problems
+   with test 261 for that module.
+
+[d.] Calculate Efffective Layer Tranmittances:
+   For each layer, the convolved layer-to-space transmittances are ratioed
+   with transmittances in the layer above to form effective layer
+   transmittances for fixed, water, ozone, CO, methane, and perturbed
+   CO2 are:
+   For FOW:
+      Feff(L) = F(L)/F(L-1)
+      Oeff(L) = ( FO(L)/F(L) )/( FO(L-1)/F(L-1) )
+      Weff(L) = ( FOW(L)/FO(L) )/( FOW(L-1)/FO(L-1) )
+    For FOWp:
+      Feff(L) = F(L)/F(L-1)
+      Oeff(L) = ( FO(L)/F(L) )/( FO(L-1)/F(L-1) )
+      Weff(L) = ( FOW(L)/FO(L) )/( FOW(L-1)/FO(L-1) )
+      peff(L) = ( FOWp(L)/FOW(L) )/( FOWp(L-1)/FOW(L-1) )
+   For FMW:
+      Feff(L) = F(L)/F(L-1)
+      Meff(L) = ( FM(L)/F(L) )/( FM(L-1)/F(L-1) )
+      Weff(L) = ( FMW(L)/FM(L) )/( FMW(L-1)/FM(L-1) )
+   For FCOWp:
+      Feff(L) = F(L)/F(L-1)
+      Ceff(L) = ( FC(L)/F(L) )/( FC(L-1)/F(L-1) )
+      Oeff(L) = ( FCO(L)/FC(L) )/( FCO(L-1)/FC(L-1) )
+      Weff(L) = ( FCOW(L)/FCO(L) )/( FCOW(L-1)/FCO(L-1) )
+      peff(L) = ( FCOWp(L)/FCOW(L) )/( FCOWp(L-1)/FCOW(L-1) )
+   The 0th layer transmittance (ie when L-1=0) is taken to be exactly 1.0.
+
+[e.] Do a Regression on the Effective Layer Transmittances and Predictors:
+   The effective layer transmittances are converted to absorption coefficient
+   (by taking the minus logarithm), and then weighted according to some
+   estimated relative importance.  A regression is done on this data with
+   a set of profile dependent predictors (see note below) as the independent
+   variables.  The regression, which is of the form A*X=B, where A is a matrix
+   of predictors and B is the data, calculates X, the fast transmittance
+   coefficients.
+
+   Note: The predictors are generally various combinations of the main profile
+   variables such as the temperature and gas amount, as well as the satellite
+   viewing angle.  One of the most time consuming and tiring aspects in
+   developing a fast model using this method is in selecting/inventing the
+   optimum set of predictors.  It is essentially a trial and error exercise;
+   try somthing an see how it works.
+
+The fast transmittance coefficients may be used to quickly compute effective
+layer transmittances for almost any desired profile simply by calculating
+the appropriate predictor values for the profile and multiplying them by the
+coefficients.  In our AIRS model, the individual component gases ("fixed",
+water, ozone, CO, methane, and the far-wing water continuum) are calculated
+separately.  The total layer transmittance is the product of the individual
+component transmittances.
+
+The only part of this process supplied with this package is the code to do
+a demonstration of the transmittance calculation discussed in the proceeding
+paragraph.  The heart of this package is the fast transmittance coefficients
+(a set of of numbers) and the code ("calpar.f") describing how the predictors
+are calculated.  Everything else is relatively unimportant.
+
+
+The Regression:
+--------------
+The regression to determine the fast transmittance coefficients was carried
+in FORTRAN using LAPACK (Linear Algebra PACKage) routines to solve an equation
+of the form A*X=B by the method of Q-R factorization. Something on the order
+of 1 million regressions are necessary: 2378 channels with 3 or 4 gases and
+100 layers (300 levels for the OPTRAN water calculations).  The maximum number
+of predictors used for each regression was determined by the number of data
+points, the layer number, the maximum value of the data, and the relative
+value to the data compared to data for the other gases.
+
+A regression was done using the maximum number of predictors, and the RMS
+fitting errors of the optical depths (unweighted) was then calculated. The
+number of predictors was then reduced by one and another regression done. The
+RMS results were then compared to the RMS results of the previous regression.
+If the RMS error was less than 2% worse than the regression with the maximum
+number of predictors, this procedure was repeated until the RMS error got
+large (or we were down to only one predictor).  The last regression meeting
+the 2% criteria was the one saved to output.
+
+
+The Predictors:
+--------------
+The predictors used with the fast model are as follows:
+
+    ---------------------------------
+    CONPRD: water continuum predictors (7 terms)
+       1) a*W/Tr^2    2) a*(W/Tr^2)^2   3) a*W/Tr  4) a*W^2/Tr
+       5) a*(W/Tr)^2  6) a*W/Tr^4       7) a*W
+
+    -------------------------------
+    Fixed predictors
+
+    FPRED1: FWO (8 terms):
+       1) a        2) a^2      3) a*Tr    4) a*Tr^2
+       5) Tr       6) Tr^2     7) a*Trz   8) a*Trz/Tr
+
+    FPRED2: FOW (8 terms):
+       1) a        2) a^2      3) a*Tr    4) a*Tr^2
+       5) Tr       6) Tr^2     7) a*Trz   8) a*Trz/Tr
+
+    FPRED3: FMW (8 terms):
+       1) a        2) a^2      3) a*Tr    4) a*Tr^2
+       5) Tr       6) Tr^2     7) a*Trz   8) a*Trz/Tr
+
+    FPRED4: FCOW (11 terms):
+       1) a        2) a^2      3) a*Tr    4) a*Tr^2
+       5) Tr       6) Tr^2     7) a*Trz   8) a^2*Trz
+       9) a^2*Tr  10) a^3     11) sqrt(a)
+
+    FPRED5: FWO (11 terms):
+       1) a        2) a^2      3) a*Tr    4) a*Tr^2
+       5) Tr       6) Tr^2     7) a*Trz   8) a*Trz/Tr
+       9) a^2*Tr  10) sqrt(a) 11) Trz
+
+    FPRED6: FWO (8 terms):
+       1) a        2) a^2      3) a*Tr    4) a*Tr^2
+       5) Tr       6) Tr^2     7) a*Trz   8) sqrt(a)
+
+    FPRED7: FWO (8 terms):
+       1) a        2) a^2      3) a*Tr    4) a*Tr^2
+       5) Tr       6) Tr^2     7) a*Trz   8) sqrt(a)
+
+    ---------------------------------
+    Water predictors
+
+    WPRED1: FWO (11 terms):
+       1) W*a           2) sqrt(W*a)       3) W*a*W/Wz
+       4) W*a*dT        5) (W*a)^2         6) sqrt(W*a)*dT
+       7) root^4(W*a)   8) sqrt(W*a)*W/Wz  9) (W*a)^3
+      10) W            11) W*a*dT*|dT|
+
+    WPRED2: FOW (11 terms):
+       1) W*a             2) sqrt(W*a)     3) W*a*dT
+       4) W*a*Ox*a        5) (W*a)^2       6) root^4(W*a)
+       7) sqrt(W*a)*dT    8) W*a*W/Wz      9) (W*a)^3
+      10) W*a*(Ox*a)^2   11) sqrt(W*a)*W/Wz
+
+    WPRED3: FMW (11 terms):
+       1) W*a             2) sqrt(W*a)     3) W*a*W/Wz
+       4) W*a*dT          5) (W*a)^2       6) sqrt(W*a)*dT
+       7) root^4(W*a)     8) (W*a)^3       9) W
+      10) sqrt(W*a)*W/Wz 11) sqrt(W*a)*Mz*a
+
+    WPRED4: FCOW (13 terms):
+       1) W*a             2) W             3) sqrt(W*a)
+       4) W*a*dT          5) (W*a)^2       6) sqrt(W*a)*dT
+       7) root^4(W*a)     8) W*a*W/Wz      9) W*a^2
+      10) (W*a)^3        11) W*a*Cz*a     12) sqrt(W*a)*W/Wz
+      13) W*a^2*dT
+
+    WPRED5: FWO bfsw (3 terms):
+       1) W*a           2) (W*a)^3/2       3) W*a*dT
+
+    WPRED6: FWO mfmw (7 terms):
+       1) W*a           2) (W*a)^3/2       3) W*a*dT
+       4) (W*a)^2       5) (W*a)^3/2*dT    6) (W*a)^3
+       7) W*a^2
+
+    WPRED7: FWO mfbw (13 terms):
+       1) W*a           2) (W*a)^3/2       3) W*a*dT
+       4) (W*a)^2       5) (W*a)^3/2*dT    6) (W*a)^3
+       7) W*a^2         8) W*a*W/Wz        9) (W*a)^3/2*W/Wz
+      10) (W*a)^5/4    11) (W*a)^2*W/Wz   12) W^2*a
+      13) (W*a)^7/4
+
+    ---------------------------
+    Ozone predictors
+
+    OPRED1: FWO (5 terms):
+       1) O*a             2) sqrt(O*a)     3) O*a*dT
+       4) (O*a)^2         5) sqrt(O*a)*dT
+
+    OPRED2: FOW (10 terms):
+       1) O*a             2) sqrt(O*a)     3) O*a*dT
+       4) (O*a)^2         5) sqrt(O*a)*dT  6) O*a*O/Ox
+       7) sqrt(O*a)*O/Ox  8) O*a*Oz/Ox     9) O*a*sqrt(Ox*a)
+      10) O*a*TOz*a
+
+    OPRED4: FCOW (3 terms):
+       1) O*a         2) sqrt(O*a)     3) O*a*dT
+
+    OPRED5: FWO bfsw (1 term):
+       1) O*a
+
+    OPRED6: FWO mfmw (1 term):
+       1) O*a
+
+    OPRED7: FWO mfbw (1 term):
+       1) O*a
+
+    ---------------------------
+    CPRED4: carbon monoxide predictors (11 terms):
+       1) C*a           2) sqrt(C*a)       3) C*a*dT
+       4) (C*a)^2       5) C*a*C/Cz        6) sqrt(C*a)*dT
+       7) root^4(C*a)   8) sqrt(C*a)*C/Cz  9) C
+
+    ---------------------------
+    MPRED3: methane predictors (9 terms):
+       1) M*a           2) sqrt(M*a)     3) M*a*dT
+       4) (M*a)^2       5) M*a^2         6) Mz*a
+       7) M*dT          8) TMz*a         9) sqrt(Mz*a)
+
+    ---------------------------
+    CO2PRD: CO2 perturbation predictors (4 terms):
+       1) a        2) Tr      3) a*Tr    4) a*Tr^2
+
+    ---------------------------
+    H2OPRED: OPTRAN water predictors (9 terms):
+       1) 1                2) Pop/Pavgop      3) Top/Tavgop
+       4) sqrt(Pop/Pavgop) 5) (Top/Tavgop)^2  6) Pop*Top/(Pavgop*Tavgop)
+       7) Pzop/Pzavgop     8) Tzop/Tzavgop    9) aop
+
+    -----
+    where:
+    "a" is the secant of the viewing angle SECANG
+    "Tr" is the temperature ratio PTEMP/RTEMP
+    "Trz" is the pressure weighted temperature ratio above, i.e.
+      the sum i=2 to i=L of { P(i) * ( P(i) -  P(i-1) )* Tr(i-1) }
+      where "P" is the pressure PRES and "L" is the layer number, and
+      Trz(L=1)=0
+    "W" is the water amount ratio PWAMNT/RWAMNT
+    "dT" is the temperature offset PTEMP-RTEMP
+    "Wz" is the pressure weighted water amount above ratio, the
+      sum i=1 to i=L of { P(i) * ( (P(i)-P(i-1) ) * PWAMNT(i) },
+      divided by the same sum except using RWAMNT instead of PWAMNT.
+      For these sums, term P(0) is defined as P(0)=2*P(1) - P(2).
+    "O" is the ozone amount ratio POAMNT/ROAMNT
+    "Oz" is the pressure weighted ozone amount above ratio, the
+      sum i=1 to i=L of { P(i) * ( (P(i)-P(i-1) ) * POAMNT(i) },
+      divided by the same sum except using ROAMNT instead of POAMNT.
+      For these sums, term P(0) is defined as P(0)=2*P(1) - P(2)
+    "Ox" is the unweighted ozone amount above ratio, the
+      sum i=1 to i=L of { POAMNT(i) },
+      divided by the same sum except using ROAMNT instead of POAMNT.
+      For these sums, term P(0) is defined as P(0)=2*P(1) - P(2).
+    "TOz" is the pressure and ozone weighted temperature ratio above,
+      sum i=2 to i=L of { P(i) * ( P(i)-P(i-1) )* dT(i-1) * O(i-1) }
+      and TOz(L=1)=0
+    "C" is the carbon monoxide amount ratio POAMNT/ROAMNT
+    "Cz" is the pressure weighted CO amount above ratio, the
+      sum i=1 to i=L of { P(i) * ( (P(i)-P(i-1) ) * PCAMNT(i) },
+      divided by the same sum except using RCAMNT instead of PCAMNT.
+      For these sums, term P(0) is defined as P(0)=2*P(1) - P(2).
+    "M" is the methane amount ratio PMAMNT/RMAMNT
+    "Mz" is the pressure weighted methane amount above ratio, the
+      sum i=1 to i=L of { P(i) * ( (P(i)-P(i-1) ) * PMAMNT(i) },
+      divided by the same sum except using RMAMNT instead of PMAMNT.
+      For these sums, term P(0) is defined as P(0)=2*P(1) - P(2).
+    "TMz" is the pressure and methane weighted temperature ratio above,
+      sum i=2 to i=L of { P(i) * ( P(i)-P(i-1) )* Tr(i-1) * M(i-1) }
+      and TMz(L=1)=0
+    "aop" is the OPTRAN secant of the viewing angle SECANG
+    "Pop" is the OPTRAN profile pressure
+    "Pavgop" is the average OPTRAN profile pressure
+    "Top" is the OPTRAN profile temperature
+    "Tavgop" is the average OPTRAN profile temperature
+    "Pzop" is the OPTRAN profile pressure above
+    "Pzavgop" is the average OPTRAN profile pressure above
+    "Tzop" is the OPTRAN profile temperature above
+    "Tzavgop" is the average OPTRAN profile temperature above
+    Note: The OPTRAN average raw predictor values are stored in the header
+    section of the OPTRAN data file.  The profile values on the OPTRAN level
+    grid are determined by interpolating the values on the 100 AIRS layers.
+    -----------------------------------------------------
+
+Angles:
+The local path angle is subtended by the Earth outward normal at the point the
+satellite is looking at, and the ray from the point the satellite is looking
+at back to the satellite. A simple equation (based on the satellite's altitude,
+the Earth's radius, and the approximate layer altitude) can convert between
+this angle and the AIRS satellite viewing angle.  See routine VACONV.
+
+Fixed:
+Once calculated as described above, the effective layer optical depth for the
+"fixed" gases may be multiplied by FIXMUL(L) to account for minor variations
+in "fixed" gas amount.  It takes account of the effects of water vapor
+displacement of fixed gases, as well as minor variations in profile layer
+thickness (which are profile and latitude dependent).
+
+Water:
+The effective layer transmittance for water only covers the near wing portion
+of the water line absorption; the far wing portion (defined as that part of
+the lineshape more than 25cm-1 from line-center) is handled with the water
+continuum fast model.  The continuum is slowly varying with frequency compared
+to the AIRS SRF, and so it may be approximated as a constant over a single
+AIRS channel.  In other words, the effective continuum transmittance can be
+well approximated by the monchromatic continuum transmittance, as so the
+water continuum can be handled separately from the other gases.
+
+For ease of implementation, a fast model has been developed for the far wing
+water continuum.  It is based on a regression of kCARTA computed water
+continuum using the CKD version 2.4 continuum model.  Estimated accuracy of
+the fast model is within ~2% of the kCARTA calculation.
+
+For some of the water channels we have used the OPTRAN method to model the
+water optical depths.  This has been restricted to only those channels where
+the method resulted in an improvement in accuracy.
+
+
+Variable CO2:
+------------
+The transmittance of a "standard" CO2 profile is included in the
+"fixed" gases transmittance.  The standard profile is 370 ppmv
+mixing ratio for all layers (except for the top few where it
+starts to dip down towards slightly).  370 ppmv is the approximate
+expected global average CO2 mixing ratio in 2001.
+
+Using a separate set of coefficients & predictors, we have modeled
+the effect upon the total transmittance of a small change in the
+CO2 mixing ratio.  For a change in CO2 of just a few percent, the
+change in total optical depth varies almost linearly with the CO2
+perturbation.  This fact is the basis of the fast model variable
+CO2.  The coefficients are actually for one particular perturbation
+in CO2, and we simply linearly scale the calculations to adjust
+them for the desired perturbation.
+
+The variable CO2 is only accurate for small changes in CO2 mixing
+ratio.  There are no hard limits, but -6 to +6 % is a reasonable
+range.  It will handle larger changes, but accuracy drops off.
+

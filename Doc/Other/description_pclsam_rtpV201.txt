@@ -1,0 +1,188 @@
+
+    ====================================================
+    Descriptive notes for the SARTA v1.08 PCLSAM variant
+    ====================================================
+    The Stand Alone AIRS-RTA package (rtpV201 variant)
+    Organization: University of Maryland Baltimore County (UMBC)
+    Programmer: Scott Hannon (email: umbc.edu)
+    AIRS Team Member: L. Larrabee Strow (email: strow@umbc.edu)
+    SARTA web site: http://asl.umbc.edu/pub/packages/sarta.html
+    Last update: 13 April 2010
+
+
+Introduction:
+------------
+This documentation is a supplement to the standard "description.txt"
+file included on the standard SARTA v1.08 package, and consists of a
+brief decription of PCLSAM related features not present in the
+standard SARTA.
+
+The PCLSAM variant of SARTA can be used to calculate the approximate
+radiance of a field of view containing up to two clouds.  The clouds
+may be transmissive and scattering, or black.  The quality of the
+calculations is rather crude, particularly the scattering component.
+
+There are two versions of the PCLSAM variant code:
+   1) sarta_pclsam_slabcloud
+   2) sarta_pclsam_100layercloud (not yet updated to rtpV201)
+The slab cloud variant works with clouds defined by a top and bottom
+pressure and a single total cloud amount and mean particle size.  The
+100 layer cloud variant uses cloud amount (and optionally cloud particle
+size) profiles specified on the 100 layer AIRS grid.
+
+The PCLSAM codes make use of lookup tables for various cloud properties.
+These properties vary depending upon the types of particles making up
+the clouds, eg water droplets, ice aggregates, smoke, dust, et cetera.
+A separate set of lookup tables is required for each cloud particle type.
+Black clouds do not require lookup tables.
+
+
+RTP v201 Cloud Fields:
+---------------------
+RTP v201 is designed for up to two clouds.  There are 9 cloud
+fields for each cloud
+   cfrac : fraction of FOV containing this cloud
+   ctype : cloud type code number; see "cloud_type_code.txt"
+   cprtop: cloud top pressure
+   cprbot: cloud bottom pressure
+   cngwat: total amount of cloud particles
+   cpsize: mean size of cloud particles
+   cemis: cloud surface emissivity
+   crho: cloud surface reflectivity
+   cstemp: cloud surface temperature
+The first cloud uses these fields, while the second cloud
+uses similarly named fields except with a "2" at the end.  In
+addition, there is one more field for the overlap of both clouds
+   cfrac12: fraction of FOV containing both clouds
+
+NOTE: SARTA will attempt to do a cloud calculation if the
+cloud fraction is greater than zero, and not otherwise.  It
+will inter-compare the three cloud fractions to make sure
+they are valid and report any logical inconsistency.
+
+
+Cloud Types:
+-----------
+Cloud particle types are specified using a cloud type code number. This
+code number is used to control which of the lookup tables are used.
+See file "cloud_type_code_numbers.txt" for our recommended numbering
+system.  You are free to use some other numbering system, but you
+should be aware of the following:
+a) If you specify a code number for which there is no exact match
+   in the lookup tables, the code will use the nearest available lookup
+   table which falls within the same "century" (span of 100) as the
+   requested code number. For example, if you have lookup tables
+   {101, 170, 203} and request 199, the code will use the table
+   for 170 for 199.
+b) The code interprets all cloud type code numbers less than 100 as
+   a black cloud.
+
+Due to finite computer memory, the code is ordinarily compiled with
+a limited selection of cloud particle types.  The number of cloud
+types is specified in the include file "incFTC.f" by variable NMIETY,
+while the corresponding lookup table filenames and cloud type code
+numbers are set in include file "fnmie.f".
+
+
+Black Clouds:
+------------
+Black clouds are non-transmissive and non-scattering; they are
+treated as a surface at the specified cloud top pressure. Black
+clouds are indicated by any "ctype" < 100, and require the
+following info:
+   ctype: cloud type code number
+   cfrac: cloud fraction {0.0-1.0}
+   cprtop: cloud top pressure >= PROF.spres {hPa}
+   cemis: emissivity
+   crho: reflectance
+   OPTIONAL cstemp: surface temperature {K}
+If cstemp <=0 then the surface temperature is interpolated from
+the layer temperatures to cprtop.
+
+If two clouds are specified (cfrac & cfrac2 > 0), then
+cfrac12 must also be specified.  A black cloud may not be
+OVER (higher altitude & lower pressure) a transmissive
+cloud unless cfrac12=0.  There is no such restriction if
+the black cloud is UNDER the transmissive cloud.
+
+Non-required cloud fields are not used and have no effect.
+
+
+Slab Cloud:
+----------
+Slab clouds are one of our two SARTA implmentations of
+transmissive and scattering clouds, the other being 100 layer
+clouds.  Unlike 100 layer clouds, slab clouds do not use cloud
+profiles; rather the cloud is defined by a top and bottom
+pressure and total absorber amount. Slab clouds require the
+following info:
+   ctype : type code number
+   cfrac : fraction {0.0-1.0}
+   cprtop: cloud-top pressure {hPa}
+   cprtop: cloud-bottom pressure {hPa}
+   cngwat: water/whatever amount {g/m^2}
+   cpsize: particle size {um}
+
+If two clouds are specified (cfrac & cfrac2 > 0), then
+cfrac12 must also be specified.
+
+Non-required cloud fields are not used and have no effect.
+
+
+100 Layer Cloud:
+---------------
+Cloud profiles are specified on the same 100 AIRS layers as
+the air temperature and atmospheric gas amounts.  Cloud amount
+profiles must be in units of g/m^2 (HEAD.gunit = 5), while
+cloud particle size must be in units of um (HEAD.gunit = 55).
+The gas IDs are expected to be 201 (IDCLD1) for cloud 1
+gas amount and 301 (IDCLD1+IOFFP) for particle size, while
+cloud2 uses 202 amount and 302 particle size. (IDCLD1, IDCLD2,
+and IOFFPS are set in include incFTC.f").
+
+NOTE: the 100 layer SARTA code has not yet been updated to
+use rtpV201.  Not sure when I'll get to it.
+
+
+Cloud Fraction:
+--------------
+With a single cloud, the radiance is a weighted sum of radiances
+for the clear portion of the FOV and the cloudy portion.
+   fraction-clear
+   fraction-cloud1
+The sum of these two fractions must equal one.
+
+With two clouds, the total radiance is a weighted sum of radiances for:
+   fraction-clear
+   fraction-cloud1-only
+   fraction-cloud2-only
+   fraction-cloud1-and-cloud2
+The total sum of these four fractions must equal one.  For the case
+of two black clouds, fraction-cloud1-and-cloud2 should be zero as
+radiance can not pass thru a black cloud.
+
+When dealing with two clouds, the SARTA code treats "prof.cfrac" as
+the total fraction of the FOV containing cloud1, which includes any
+overlap with cloud2 as specified by cfrac12.  A similar consideration
+applies to fraction for cloud2.  The fractions of the FOV containing
+only cloud1 and cloud2 are thus
+   fraction-cloud1-only = cfrac  - cfrac12
+   fraction-cloud2-only = cfrac2 - cfrac12
+
+
+Lookup Tables:
+-------------
+The cloud lookup tables are read by routine "rdcldt.f".  For each
+cloudy particle type, this reads one set of lookup tables consisting
+of three files
+   1) Absorption
+   2) Extinction
+   3) Asymmetry ("G")
+Each file contains a small header and a 2D table of the above named
+parameter value as a function of instrument channel (ie frequency)
+and particle size.  All three files must contain the same number of
+particle sizes, but different sets of lookup tables may have
+different numbers of sizes. The maximum allowed number of sizes
+is specified in include file "incFTC.f" by variable MXMIEA.
+
+--- end of file ---
